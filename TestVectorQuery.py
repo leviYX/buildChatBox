@@ -15,7 +15,7 @@ elastic_vector_search = ElasticsearchStore(
 
 
 results = elastic_vector_search.similarity_search_with_score(
-    query="白洁就睡去了",
+    query="白洁的老公",
     k=1,
 )
 for doc, score in results:
