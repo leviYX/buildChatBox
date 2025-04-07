@@ -10,30 +10,18 @@ from streamlit import streamlit as st
 # load env file
 load = load_dotenv("./.env")
 
-# init llm
-llm = ChatOllama(
-    base_url = "http://127.0.0.1:11434",
-    model = "deepseek-r1:8b",
-    temperature = 0.5,
-    num_predict = 10000,
-    max_tokens = 250
-)
-
-st.title("你好，这里是橘子GPT，我是小橘")
-st.write("请把您的问题输入，小橘会认真回答的哦。")
-
  # 无密码的elasticsearch配置
 es_url = "http://localhost:9200"
 # 存储的索引，我们不用预先创建索引，因为说实话我也不知道字段，langchain会创建，并且自动映射字段
 index_name = "chat_history"
-session_id = "levi23422"
 
-
-template = ChatPromptTemplate.from_messages([
-    ('human',"{prompt}"),
-    ('placeholder',"{history}")
-])
-chain = template | llm | StrOutputParser()
+# init llm
+llm = ChatOllama(
+    base_url = "http://127.0.0.1:11434",
+    model = "huihui_ai/deepseek-r1-abliterated:14b",
+    temperature = 0.5,
+    num_predict = 10000
+)
 
 # 构建ElasticsearchChatMessageHistory
 def get_session_history(session_id: str) :
@@ -44,15 +32,18 @@ def get_session_history(session_id: str) :
         ensure_ascii=False
     )
 
-chain_with_history = RunnableWithMessageHistory(
-    chain,
-    get_session_history,
-    input_messages_key="prompt",
-    history_messages_key="history",
-)
-
-
+session_id = "levi"
+st.title("你好，这里是橘子GPT，我是小橘")
+st.write("请把您的问题输入，小橘会认真回答的哦。")
+session_id = st.text_input("请输入一个session_id,否则我们将使用默认值levi",session_id)
+isClickButton:bool = st.button("点击按钮，开启新的对话")
+# query input
 user_prompt = st.chat_input("我是小橘，请输入你的问题吧")
+
+if isClickButton:
+    get_session_history(session_id).clear()
+    st.session_state.chat_history = []
+
 
 # 如果没有就创建，不要每次都建立新的
 if 'chat_history' not in st.session_state:
@@ -64,6 +55,18 @@ for message in st.session_state.chat_history :
         # 把内容展示出来
         st.markdown(message['content'])
 
+
+template = ChatPromptTemplate.from_messages([
+    ('human',"{prompt}"),
+    ('placeholder',"{history}")
+])
+chain = template | llm | StrOutputParser()
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="prompt",
+    history_messages_key="history",
+)
 
 if user_prompt :
     response = chain_with_history.invoke(
