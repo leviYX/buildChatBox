@@ -57,7 +57,9 @@ def invoke_history_by_stream(chain,prompt,session_id):
         input_messages_key = prompt,
         history_messages_key="history",
     )
+    # 以stream流的方式执行
     responseStream = chain_with_history.stream({"prompt": prompt},config={"configurable": {"session_id": session_id}})
+    # 遍历返回，逐个回复
     for response in responseStream:
         yield response
 
@@ -86,6 +88,7 @@ if user_prompt :
         st.markdown(user_prompt)
 
     with st.chat_message('assistant'):
+        # 以流式的方式渲染答案
         streamResp = st.write_stream(invoke_history_by_stream(chain,user_prompt,session_id))
         # 保存历史，上面用来遍历显示，避免后面覆盖前面的显示
         st.session_state.chat_history.append({'role': 'assistant', 'content': streamResp})
