@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from langchain_core.documents import Document
 
-pdf1 = './baijie.pdf'
+pdf1 = './weifangfood.pdf'
 pdfs = [pdf1]
 docs = []
 
@@ -35,12 +35,10 @@ elastic_vector_search = ElasticsearchStore(
     embedding=embed,
 )
 
-page = 1
 documents = []
 for text in split_text_list:
     # vector = embed.embed_query(text.page_content)
     print(text.page_content)
-    print("**********************",page)
     print(text.metadata)
 
     document = Document(
@@ -48,9 +46,6 @@ for text in split_text_list:
         metadata = text.metadata,
     )
     documents.append(document)
-    page += 1
-    if page >= 100:
-        break
 
 uuids = [str(uuid4()) for _ in range(len(documents))]
 elastic_vector_search.add_documents(documents=documents, ids=uuids)
