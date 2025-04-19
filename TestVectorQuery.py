@@ -1,8 +1,6 @@
 from langchain_ollama import OllamaEmbeddings
 from langchain_elasticsearch import ElasticsearchStore
 
-
-
 # 向量化
 embed = OllamaEmbeddings(model="llama3.2:latest")
 
