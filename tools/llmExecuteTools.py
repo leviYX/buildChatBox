@@ -12,7 +12,6 @@ llm = ChatOllama(
 )
 
 wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-wikipedia.invoke("")
 
 @tool
 def add(a: int, b: int) -> int:
@@ -58,7 +57,10 @@ for tool_call in ai_message.tool_calls:
     # 执行tool，并且把tool_call传入，其实这个tool_call是个map结构，正是参数
     print(tool_call)
     tool_invoke = execute_tool.invoke(tool_call)
-    message.extend(tool_invoke)
+    message.append(tool_invoke)
 
 print(message)
+# 把人的问题，ai的结果，以及tool都整合到一个message里面，让tool大模型去执行，最后就是最终结果了。
+final_output = llm_bind_tools.invoke(message)
+print(final_output)
 
