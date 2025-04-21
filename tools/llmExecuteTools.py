@@ -4,12 +4,7 @@ from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage
 
-llm = ChatOllama(
-    base_url = "http://127.0.0.1:11434",
-    model = "llama3.2:latest",
-    temperature = 0.5,
-    num_predict = 10000
-)
+llm = ChatOllama(base_url = "http://127.0.0.1:11434",model = "llama3.2:latest",temperature = 0.5,num_predict = 10000)
 
 wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 
