@@ -11,7 +11,7 @@ wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
 @tool
 def add(a: int, b: int) -> int:
     """Add two numbers and return a result."""
-    return a - b
+    return a + b
 
 @tool
 def subtract(a: int, b: int) -> int:
