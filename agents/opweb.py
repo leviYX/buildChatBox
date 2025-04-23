@@ -1,47 +1,35 @@
-
-
 from langchain_ollama import ChatOllama
 from langchain_community.utilities.sql_database import SQLDatabase
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
-from langchain.agents import create_sql_agent
+from langchain import hub
+from langgraph.prebuilt import create_react_agent
+from dotenv import load_dotenv
 
-
-
-llm = ChatOllama(base_url="http://127.0.0.1:11434", model="qwen:1.8b", temperature=0.5,num_predict=10000)
+# 加载langsmith，因为下面的create_react_agent操作要推送监控，这里不加载会报错，
+load = load_dotenv("./.env")
+# 构建llm对象
+llm = ChatOllama(base_url = "http://127.0.0.1:11434",model = "llama3.2",temperature = 0.5,num_predict = 10000)
+# 构建数据库连接，这个连接mysql的url我在官网没找到，是在一个博客看到的
 db = SQLDatabase.from_uri("mysql+pymysql://dba:dba*#2022@172.16.10.27:3306/a1")
+# 构建SQLDatabaseToolkit对象，绑定llm和db，形成tools
 toolkit = SQLDatabaseToolkit(db=db, llm=llm)
-# 创建 Agent
-agent_executor = create_sql_agent(
-    llm=llm,
-    toolkit=toolkit,
-    verbose=True,
-    use_query_checker=True  # 确保 Agent 会检查并执行查询
+print(toolkit.get_tools())
+
+# 从prompt_hub拉取一个sql类型操作的prompt模板
+prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
+# 填充模板
+system_message = prompt_template.format(dialect="SQLite", top_k=5)
+# 构建agent对象
+agent_executor = create_react_agent(llm, toolkit.get_tools(), prompt=system_message)
+
+# 用户问题
+question = "查询数据表数据表名字test_llm中的id=4的数据,以表格的形式输出"
+
+# stream方式执行agent
+events = agent_executor.stream(
+    {"messages": [("user", question)]},
+    stream_mode="values",
 )
-
-# 使用 Agent 执行查询
-example_query = "显示数据库名字为a1下面的数据表名字为test_llm中的id=4的数据"
-query_tool = toolkit.get_tools()[0]  # 获取 QuerySQLDatabaseTool
-
-sql_query = "SELECT * FROM a1.test_llm WHERE id = 4"
-result = query_tool.run(tool_input=sql_query)
-
-
-# result = agent_executor.run(sql_query)
-print("***************")
-print(result)
-
-
-# # 获取工具
-# list_tool = toolkit.get_tools()[2]  # 获取 ListSQLDatabaseTool
-#
-# # 调用工具
-# tables = list_tool.run(tool_input={})  # 提供空字典作为输入
-# print(tables)
-# query_tool = toolkit.get_tools()[0]  # 获取 QuerySQLDatabaseTool
-#
-# # 获取第一个表名
-# first_table_name = tables[0]
-# # 构造 SQL 查询字符串
-# query = f"SELECT * FROM {first_table_name} LIMIT 10"
-# result = query_tool.run(tool_input=query)
-# print(result)
+# 输出结果
+for event in events:
+    event["messages"][-1].pretty_print()
