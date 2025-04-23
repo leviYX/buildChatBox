@@ -11,9 +11,9 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage
 
 
-model_name = "llama3.2"
+model_name = "qwen2.5:14b"
 load = load_dotenv("./.env")
-llm = ChatOllama(base_url = "http://127.0.0.1:11434",model = model_name,temperature = 1.0,num_predict = 10000)
+llm = ChatOllama(base_url = "http://127.0.0.1:11434",model = model_name,temperature = 1.0,num_predict = 2000)
 
 # tools
 db = SQLDatabase.from_uri("mysql+pymysql://dba:dba*#2022@172.16.10.27:3306/llm")
@@ -30,8 +30,8 @@ elastic_vector_search = ElasticsearchStore(
 )
 
 retriever = elastic_vector_search.as_retriever(
-    search_type="mmr",
-    search_kwargs={"k":100}
+    search_type="similarity",
+    search_kwargs={"k":1}
 )
 
 @tool
@@ -49,6 +49,7 @@ memory = MemorySaver()
 print("**********************打印一下现在的tool")
 print(tools)
 agent_executor = create_react_agent(llm, tools, checkpointer=memory)
+
 # 用户问题
 config = {"configurable": {"thread_id": "abc123"}}
 for step in agent_executor.stream(
