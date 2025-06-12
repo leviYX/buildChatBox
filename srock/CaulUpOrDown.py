@@ -2,7 +2,7 @@ import baostock as bs
 import pandas as pd
 from datetime import datetime, timedelta
 
-code = "sh.605398"
+code = "sh.600177"
 
 # 登陆系统
 lg = bs.login()
@@ -41,10 +41,10 @@ result['月份'] = result['date'].dt.to_period('M')  # 添加月份列
 monthly_summary = result.groupby('月份')['变化'].value_counts().unstack(fill_value=0)
 
 
-if code == 'sh.600567':
-    print("***************山鹰国际（600567）2024-04 至 2025-04 涨跌变化表***************")
+if code == 'sh.600679':
+    print("***************上海凤凰（600679）2024-04 至 2025-04 涨跌变化表***************")
 else:
-    print("***************新炬网络（605398）2024-04 至 2025-04 涨跌变化表***************")
+    print("***************雅戈尔 涨跌变化表***************")
 
 # 输出结果
 print(monthly_summary)
